@@ -1,30 +1,13 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[21]:
-
-
-import random
-
-a = []
-b = []
-
-def solution ():
+def solution(a, b):
     
     answer = 0
-    length = random.randint(1, 1000)
+    length = len(a)
     
     for i in range(length):
-        m = random.randint(-1000, 1000)
-        n = random.randint(-1000, 1000)
-        a.append(m)
-        b.append(n)
+        
         answer += a[i] * b[i]
         
     
     return answer
 
-print(solution())
-print(a)
-print(b)
-
+solution([1,2,3,4, 5], [0,1,3,1, 5])
