@@ -1,0 +1,34 @@
+Q. 아래와 같이 테이블을 두 개 만드세요.
+
+테이블명: Students
+칼럼1: studentNumber - 학번(자동증가)
+칼럼2: name - 이름
+칼럼3: age - 나이
+칼럼4: address - 주소
+
+테이블명: grades
+칼럼1: studentNumber - 학번
+칼럼2: math - 수학점수
+칼럼3: english - 영어점수
+칼럼4: science - 과학점수
+
+
+
+
+
+create table Students(
+studentNumber int unsigned auto_increment,
+name varchar(255),
+age tinyint unsigned,
+address varchar(255)
+)
+
+
+create table grades(
+studentNumber int unsigned,
+math tinyint unsigned,
+english tinyint unsigned,
+science tinyint unsigned
+)
+
+
