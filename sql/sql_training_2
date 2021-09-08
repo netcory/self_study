@@ -1,13 +1,6 @@
 https://www.w3schools.com/sql/trysql.asp?filename=trysql_select_all 
 
 
-SQL Tryit Editor v1.6
-
-WebSQL stores a Database locally, on the user's computer. Each user gets their own Database object. WebSQL is supported in Chrome, Safari, Opera, and Edge(79). If you use another browser you will still be able to use our Try SQL Editor, but a different ver
-
-www.w3schools.com
-
-
 
 
 
@@ -26,6 +19,8 @@ Q. 베를린에 살고 있는 고객의 우편번호를 12210 으로 수정
 update customers
 set postalcode = 12210
 where city is 'Berlin'
+
+
 Q. 국가가 France인 고객 조회 (Table - Customers)
 
 
@@ -38,16 +33,22 @@ Q. 이름이 'Mar'로 시작하는 직원(ConactName) 조회 (Table - Customers)
 
 
 select contactname from customers where contactname like 'Mar%'
+
+
 Q. 이름이 'et'로 끝나는 직원(ContactName) 조회 (Table - Customers)
 
 
 
 select contactname from customers where contactname like '%et'
+
+
 Q. 국가가 France 이고 이름이 'La'로 시작하는 고객 조회 (Table - Customers)
 
 
 
 select * from customers where Country  is 'France' and customername like 'La%'
+
+
 Q. 국가가 France이거나 이름이 'La'로 시작하는 고객 조회
 
 
@@ -60,9 +61,9 @@ Q. 국가가 France가 아닌 고객 조회
 
 
 select * from customers where not country is 'France'
+
 혹은
 
-
-
 select * from customers where country is not 'France'
+
 둘 다 같은 결과를 가져오는 것으로 보인다.
