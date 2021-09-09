@@ -1,0 +1,86 @@
+https://www.w3schools.com/sql/trysql.asp?filename=trysql_select_all 
+ 
+ Q. 국가가 France 혹은 Spain 인 고객 조회 (Table - Customers)
+
+
+
+select * from customers where country is 'France' or country is 'Spain'
+혹은
+
+
+
+select * from customers where country in ('France', 'Spain')
+
+
+Q. 가격이 15에서 20 사이인 상품의 상품명(ProductName) 목록 조회 (Table - Products)
+
+
+
+select productname, price from products where price between 15 and 20
+
+
+혹은
+
+
+
+select productname, price from products where price < 20 and price > 15
+
+
+Q. 우편번호(postalcode)가 NULL인 고객 목록 조회 (Table - Customers)
+
+
+
+select * from customers where postalcode is null
+
+
+Q. 우편번호(postalcode)가 NULL 이 아닌 고객 목록 조회 (Table - Customers)
+
+
+
+select * from customers where postalcode is not null
+
+
+혹은
+
+
+
+select * from customers where not postalcode is null
+
+
+Q. 고객이름(CustomerName) 오름차순으로 조회 (Table - Customers)
+
+
+
+
+
+select * from customers
+order by customername asc
+
+
+Q. 카테고리id(CategoryID) 내림차순, 가격(Price) 내림차순으로 조회 (Table - Products)
+
+
+
+select * from products
+order by categoryid desc, price desc
+
+
+Q. 국가가 UK 인 고객 중 이름순 3명 조회
+
+
+
+select * from customers where country is 'UK'
+limit 3
+
+
+Q. 상품가격(Price)이 30 미만이면 '저', 30~50 '중', 50 초과는 '고'로 조회
+
+
+
+select *,
+case
+when price < 30 then '저'
+when price > 50 then '고'
+else '중'
+end as '저중고'
+from products
