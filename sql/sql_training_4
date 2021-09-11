@@ -1,0 +1,67 @@
+https://www.w3schools.com/sql/trysql.asp?filename=trysql_select_all
+
+Q. France에 거주하는 고객수 조회 (Column - Country, 고객수) (Table - Customers)
+
+
+
+select country, count(country) as '고객수' from customers where country is 'France'
+
+
+Q. 전체상품 평균가격 계산 (Table - Products)
+
+
+
+select avg(price) as '전체상품 평균가격' from products
+
+
+Q. 주문상품 수량(Quantity) 합계 계산 (Table - OrderDetails)
+
+
+
+select sum(quantity) as '주문상품 수량 합계' from orderdetails
+
+
+
+
+Q. 상품 가격(Price) 중 최소값 조회 (Table - Products)
+
+
+
+select productname, min(price) as '최소가격' from products
+
+
+Q. 상품 가격(Price)중 최대값 조회 (Table - Products)
+
+
+
+select productname, max(price) as '최대가격' from products
+
+
+Q. 국가별 고객수 조회 (고객수 기준 오름차순) (Table - Customers)
+
+
+
+select country, count(country) as '국가별 고객수' from customers
+group by country
+order by count(country) asc
+
+
+Q. 국가별 도시별 고객수 조회 (고객수 기준 내림차순) (Table - Customers)
+
+
+
+select country, city, count(city) as '도시별 고객수'
+from customers
+group by country, city
+order by count(city) desc
+
+
+Q. 국가별 고객수가 5명 초과인 국가만 조회 (고객수 내림차순) (Table - Customers)
+
+
+
+
+select country, count(country) as '국가별 고객수' from customers
+group by country
+having count(country) > 5
+order by count(country) desc
