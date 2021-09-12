@@ -1,0 +1,67 @@
+https://www.w3schools.com/sql/trysql.asp?filename=trysql_select_all 
+
+
+Q. 직원(Employees) 중 이름(LastName)이 'King'인 직원의 이름과 생일(BrithDate)과 노트(Notes)를 조회
+
+(Table - Employees)
+
+
+
+select lastname, birthdate, notes from employees
+where lastname is 'King'
+
+
+Q. 상품 중 상품명(ProductName)이 C 로 시작하고 가격(Price)이 20보다 큰 상품의
+
+상품명과 가격을 가격이 비싼순으로 정렬 (Table - Products)
+
+
+
+select productname, price from products
+where productname like 'C%' and price > 20
+order by price desc
+
+
+Q. 상품의 카테고리id(CategoryID) 별로 상품가격의 합, 가장 비싼 상품 가격, 가장 저렴한 상품 가격 조회
+
+(Table - Products)
+
+
+
+select categoryid, sum(price) as '상품가격의 합', max(price) as '가장 비싼 상품 가격',
+min(price) as '가장 저렴한 상품 가격'
+from products
+group by categoryid
+
+
+Q. 상품의 카테고리id(CategoryID)별 상품개수와 상품개수가 10개가 넘을 경우 많음,
+
+10개 이하면 적음이 표시되어있는 칼럼을 하나 추가하고 상품수가 많은 순서대로 정렬
+
+(Table - Products)
+
+
+
+select categoryid, count(categoryid) as '카테고리별 상품수',
+case
+when count(categoryid) > 10 then '많음'
+else '적음'
+end as '수량 정도'
+from products
+group by categoryid
+order by count(categoryid) desc
+
+
+Q. 고객의 국가별 고객수와 백분위 (국가별고객수 / 전체고객수 * 100)을 조회
+
+(Table - Customers)
+
+
+
+select country, count(country) as '국가별 고객수', count(country)*100/91 as '백분위'
+from customers
+group by country
+
+백분위 표현방법을 모르겠다.
+
+구글링해서 convert, float을 사용해봤는데 예상과는 다른 결과가 나오는 상태
