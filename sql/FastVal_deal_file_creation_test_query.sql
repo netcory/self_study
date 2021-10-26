@@ -121,6 +121,6 @@ SELECT [Object]
         ,[SabrParameters]
 
 FROM [MarketRisk].[dbo].[AID_FastValProducts]
-WHERE [Base_date] = '@BaseDate'
+WHERE [Base_Date] = '@BaseDate'
 AND [RWA_YN] = '@RWA_YN'
 AND [Tag_Book_Node] != 'HK';
