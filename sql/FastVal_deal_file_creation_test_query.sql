@@ -75,7 +75,7 @@ SELECT [Object]
                                     'BgmFactors=', BgmFactors, ',', 'Correlation=', Correlation, ',', 'Correlation1_2=', Correlation1_2, ',',
                                     'Correlation1_3=', Correlation1_3, ',', 'CurveIndexType=', CurveIndexType, ',', 'DataColumns=', DataColumns, ',',
                                     'MeanReversion1=', MeanReversion1, ',', 'MeanReversion2=', MeanReversion2, ',', 'Model=', Model, ',',
-                                    'Skew=', Skew, ',', 'Steps=', Steps, ',', 'Type=', Type, ',', 'VegawWeighting=', VegawWeighting, ',',
+                                    'Skew=', Skew, ',', 'Steps=', Steps, ',', 'Type=', Type, ',', 'VegaWeighting=', VegaWeighting, ',',
                                     'WeightingSwaption=', WeightingSwaption,
                                     ']')
                     FROM [dbo].[AID_FastValProduct_Calibrations]
