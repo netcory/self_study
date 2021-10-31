@@ -5,7 +5,7 @@ int main(void)
 {
 	int a;
 
-	printf("а╓╪Ж╦╕ ют╥бго╪╪©Д: ");
+	printf("ц│б╓б╪ц╤б╦б╕ ц─ц■б╥ц┌ц┤ц▐б╪б╪б©ц╓: ");
 	scanf("%d", &a);
 	printf(a);
 }
