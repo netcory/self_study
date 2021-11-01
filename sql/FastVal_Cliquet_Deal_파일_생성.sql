@@ -4,15 +4,15 @@ WITH A AS
 (
     SELECT DISTINCT [Reference]
             ,(SELECT CONCAT('[', STUFF((
-                            SELECT CONCAT(',[Name=', Name, ',', 'YieldCurveName=', YieldCurveName, ',',
-                                            'Type=', Type, ',', 'Model=', Model,
-                                            ']')
-                            FROM [MarketRisk].[dbo].[AID_FastValProduct_Assets] AS G
-                            WHERE G.[Reference] = H.[Reference]
+                                        SELECT CONCAT(',[Name=', Name, ',', 'YieldCurveName=', YieldCurveName, ',',
+                                                        'Type=', Type, ',', 'Model=', Model,
+                                                        ']')
+                                        FROM [MarketRisk].[dbo].[AID_FastValProduct_Assets] AS G
+                                        WHERE G.[Reference] = H.[Reference]
 
-                            FOR XML PATH('')
-                            ),1 , 1, '')
-                            ,']'))
+                                        FOR XML PATH('')
+                                        ),1 , 1, '')
+                                        ,']'))
                 AS Assets
     FROM [MarketRisk].[dbo].[AID_FastValProduct_Assets] AS H
 )
