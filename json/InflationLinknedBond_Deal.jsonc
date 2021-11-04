@@ -1,0 +1,424 @@
+// InflationLinkedBond Deal 추가 작업
+
+{
+    "options": [],
+    "target_type": "Deal",
+    "mappings": [
+        {
+            "query": "--AID_InflationLinkedBond\r\n\r\nSELECT [Object]\r\n ,[Reference]\r\n ,[Tag_Counterparty]\r\n ,[Tag_Netting_Set]\r\n ,[Tag_Product_Class]\r\n ,[Tag_Book_Node]\r\n ,[Tag_IMA_Eligible]\r\n ,[Tag_Is_Option]\r\n ,[Tag_Include_in_DRC]\r\n ,[Tag_Securitisation]\r\n ,[Tag_Include_in_RRAO]\r\n ,[Tag_Residual_Risk_Type]\r\n ,[Tag_Notional]\r\n , [Tag_Qualifier_ISIN]]\r\n ,[Tag_Index_Series]\r\n ,[Tag_Index_Family]\r\n ,[Tag_ISDA_Product_Name]\r\n ,[Tag_SADRC_Maturity]\r\n ,[Tag_Asset_Pool]\r\n ,[Tag_Securitisation_RW]\r\n ,[Tag_SA_DRC_Index]\r\n ,[Tag_Fallback]\r\n ,[Currency]\r\n ,[Discount_Rate]\r\n ,[Calendars]\r\n ,[Index_]\r\n\t ,CONCAT('[Days_In_Period=', Index_Reference_Days_In_Period, ',', 'Is_Interpolated=', Index_Reference_Is_Interpolated, ',', \r\n\t\t\t\t'Reference_Day=', Index_Reference_Reference_Day, ',', 'Quarter_Reference_Month=', Index_Reference_Quarter_Reference_Month, ',', \r\n\t\t\t\t'Quarters_Lag=', Index_Reference_Quarters_Lag, ',', 'Months_Lag=', Index_Reference_Months_Lag, ']') AS Index_Reference\r\n ,[MarketRisk].[dbo].[convertDateString]([Base_Reference_Date], 0, 'D', 'N') AS Base_Reference_Date\r\n ,[Base_Reference_Value]\r\n ,[Is_Forward_Deal]\r\n ,[Buy_Sell]\r\n ,[Repo_Rate]\r\n ,[Issuer]\r\n ,[Survival_Probability]\r\n ,[MarketRisk].[dbo].[convertDateString]([First_Regular_Final_Reference_Date], 0, 'D', 'N') AS First_Regular_Final_Reference_Date\r\n ,[MarketRisk].[dbo].[convertDateString]([First_Coupon_Final_Reference_Date], 0, 'D', 'N') AS First_Coupon_Final_Reference_Date\r\n ,[MarketRisk].[dbo].[convertDateString]([Final_Coupon_Final_Reference_Date], 0, 'D', 'N') AS Final_Coupon_Final_Reference_Date\r\n ,[MarketRisk].[dbo].[convertDateString]([Issue_Date], 0, 'D', 'N') AS Issue_Date\r\n ,[MarketRisk].[dbo].[convertDateString]([Bond_Maturity_Date], 0, 'D', 'N') AS Bond_Maturity_Date\r\n ,[Coupon_Interval]\r\n ,[MarketRisk].[dbo].[convertDateString]([First_Coupon_Date], 0, 'D', 'N') AS First_Coupon_Date\r\n ,[MarketRisk].[dbo].[convertDateString]([Penultimate_Coupon_Date], 0, 'D', 'N') AS Penultimate_Coupon_Date\r\n ,[Principal]\r\n ,[Amortisation]\r\n ,[Coupon_Rate]\r\n ,[Coupon_Rate_Schedule]\r\n ,[Margin]\r\n ,[Rate_Multiplier]\r\n ,[Accrual_Day_Count]\r\n ,[Accrual_Adjustment_Method]\r\n ,[Payment_Adjustment_Method]\r\n ,[MarketRisk].[dbo].[convertDateString]([Settlement_Date], 0, 'D', 'N') AS Settlement_Date\r\n ,[Investment_Horizon]\r\n ,[Price]\r\n ,[Price_Is_Clean]\r\n ,[Price_Is_Real]\r\n ,[Recovery_Rate]\r\n FROM [MarketRisk].[dbo].[AID_InflationLinkedBond]\r\n WHERE [Base_Date] = '@BaseDate'\r\n AND [RWA_YN] = '@RWA_YN'",
+            "mappings": [
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Object",
+                    "tag_yn": "N",
+                    "origin_num": "0"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Reference",
+                    "tag_yn": "N",
+                    "origin_num": "1"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "MtM",
+                    "tag_yn": "N",
+                    "origin_num": "2"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Counterparty",
+                    "tag_yn": "Y",
+                    "origin_num": "3"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Netting_Set",
+                    "tag_yn": "Y",
+                    "origin_num": "4"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Product_Class",
+                    "tag_yn": "Y",
+                    "origin_num": "5"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Book_Node",
+                    "tag_yn": "Y",
+                    "origin_num": "6"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_IMA_Eligible",
+                    "tag_yn": "Y",
+                    "origin_num": "7"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Is_Option",
+                    "tag_yn": "Y",
+                    "origin_num": "8"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Include_in_DRC",
+                    "tag_yn": "Y",
+                    "origin_num": "9"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Securitisation",
+                    "tag_yn": "Y",
+                    "origin_num": "10"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Include_in_RRAO",
+                    "tag_yn": "Y",
+                    "origin_num": "11"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Residual_Risk_Type",
+                    "tag_yn": "Y",
+                    "origin_num": "12"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Notional",
+                    "tag_yn": "Y",
+                    "origin_num": "13"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Qualifier_ISIN",
+                    "tag_yn": "Y",
+                    "origin_num": "14"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Index_Series",
+                    "tag_yn": "Y",
+                    "origin_num": "15"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Index_Family",
+                    "tag_yn": "Y",
+                    "origin_num": "16"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_ISDA_Product_Name",
+                    "tag_yn": "Y",
+                    "origin_num": "17"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_SADRC_Maturity",
+                    "tag_yn": "Y",
+                    "origin_num": "18"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Asset_Pool",
+                    "tag_yn": "Y",
+                    "origin_num": "19"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Securitisation_RW",
+                    "tag_yn": "Y",
+                    "origin_num": "20"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_SA_DRC_Index",
+                    "tag_yn": "Y",
+                    "origin_num": "21"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Tag_Fallback",
+                    "tag_yn": "Y",
+                    "origin_num": "22"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Currency",
+                    "tag_yn": "N",
+                    "origin_num": "23"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Discount_Rate",
+                    "tag_yn": "N",
+                    "origin_num": "24"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Calendars",
+                    "tag_yn": "N",
+                    "origin_num": "25"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Index",
+                    "tag_yn": "N",
+                    "origin_num": "26"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Index_Reference",
+                    "tag_yn": "N",
+                    "origin_num": "27"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Base_Reference_Date",
+                    "tag_yn": "N",
+                    "origin_num": "28"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Base_Reference_Value",
+                    "tag_yn": "N",
+                    "origin_num": "29"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Is_Forward_Deal",
+                    "tag_yn": "N",
+                    "origin_num": "30"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Buy_Sell",
+                    "tag_yn": "N",
+                    "origin_num": "31"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Repo_Rate",
+                    "tag_yn": "N",
+                    "origin_num": "32"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Issuer",
+                    "tag_yn": "N",
+                    "origin_num": "33"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Survival_Probability",
+                    "tag_yn": "N",
+                    "origin_num": "34"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "First_Regular_Final_Reference_Date",
+                    "tag_yn": "N",
+                    "origin_num": "35"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "First_Coupon_Final_Reference_Date",
+                    "tag_yn": "N",
+                    "origin_num": "36"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Final_Coupon_Final_Reference_Date",
+                    "tag_yn": "N",
+                    "origin_num": "37"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Issue_Date",
+                    "tag_yn": "N",
+                    "origin_num": "38"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Bond_Maturity_Date",
+                    "tag_yn": "N",
+                    "origin_num": "39"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Coupon_Interval",
+                    "tag_yn": "N",
+                    "origin_num": "40"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "First_Coupon_Date",
+                    "tag_yn": "N",
+                    "origin_num": "41"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Penultimate_Coupon_Date",
+                    "tag_yn": "N",
+                    "origin_num": "42"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Principal",
+                    "tag_yn": "N",
+                    "origin_num": "43"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Amortisation",
+                    "tag_yn": "N",
+                    "origin_num": "44"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Coupon_Rate",
+                    "tag_yn": "N",
+                    "origin_num": "45"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Coupon_Rate_Schedule",
+                    "tag_yn": "N",
+                    "origin_num": "46"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Margin",
+                    "tag_yn": "N",
+                    "origin_num": "47"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Rate_Multiplier",
+                    "tag_yn": "N",
+                    "origin_num": "48"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Accrual_Day_Count",
+                    "tag_yn": "N",
+                    "origin_num": "49"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Accrual_Adjustment_Method",
+                    "tag_yn": "N",
+                    "origin_num": "50"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Payment_Adjustment_Method",
+                    "tag_yn": "N",
+                    "origin_num": "51"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Settlement_Date",
+                    "tag_yn": "N",
+                    "origin_num": "52"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Investment_Horizon",
+                    "tag_yn": "N",
+                    "origin_num": "53"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Price",
+                    "tag_yn": "N",
+                    "origin_num": "54"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Price_Is_Clean",
+                    "tag_yn": "N",
+                    "origin_num": "55"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Price_Is_Real",
+                    "tag_yn": "N",
+                    "origin_num": "56"
+                },
+                {
+                    "value_yn": "N",
+                    "code_yn": "N",
+                    "target_filed": "Recovery_Rate",
+                    "tag_yn": "N",
+                    "origin_num": "57"
+                }
+                
+            ]
+        }
+    ],
+    "file_name": "Deals.aap",
+    "file_path": "D:\\MarketRisk\\Adaptiv\\@BaseDate\\@Path\\@Seq",
+    "origin_database": 23,
+    "query": ""
+}
