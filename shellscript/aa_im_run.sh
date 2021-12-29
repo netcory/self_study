@@ -42,8 +42,8 @@ if [ ${CALC_TP} = "0" ] || [ ${CALC_TP} = "1" ]; then
 fi
 
 if [ ${CALC_TP} = "0" ] || [ ${CALC_TP} = "2" ]; then
-    echo "01_hsvar.ps1 - 내부관리 계산"
-    result=$(ssh adaptiv@128.16.248.224 powershell "& ""D:\Batch\01_hsvar.ps1 $BASE_DT""")
+    echo "01_inner.ps1 - 내부관리 계산"
+    result=$(ssh adaptiv@128.16.248.224 powershell "& ""D:\Batch\01_inner.ps1 $BASE_DT""")
     result2=`expr substr $result 1 2`
 
     if [ "$result2" = "su" ]; then
