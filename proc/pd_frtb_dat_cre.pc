@@ -1,0 +1,733 @@
+/*------------------------------------------------------------------------------------*
+*   01.PROGRAM  : pd_frtb_dat_cre.pc(Version 1.0)
+*   02.LANGUAGE : UNIX/PRO-C
+/*------------------------------------------------------------------------------------*
+*   03.단위업무  : RDM
+*   04.주제영역  : 지주전송 FRTB 파일 생성
+*   05.작 성 자  : AA
+*   06.작성일자  : 2021.07.27
+*   07.관련요건  : 바젤 데이타 요구서
+*   08.요건정의  :
+*-------------------------------------------------------------------------------------*
+*   09.설    명  : 지주전송 FRTB 파일 정보 생성
+*      입    력  : RDM
+*      출    력  : RDM
+*      참고사항  :
+*-------------------------------------------------------------------------------------*
+*   10.변경이력  :
+*       Version 1.1
+*           변 경 자  :
+*           변경일자  :
+*           관련요건  :
+*           요건정의  :
+*-------------------------------------------------------------------------------------*/
+
+/*------------------------------------------------------------------------------------*
+ *                             ***    Include Define    ***                            *
+ *-------------------------------------------------------------------------------------*/
+#include "/home/ermlib/erms_lib.h"
+
+EXEC SQL INCLUDE sqlca.h;
+EXEC SQL INCLUDE oraca.h;
+EXEC SQL DECLARE DB_NAME DATABASE;
+
+/*------------------------------------------------------------------------------------*
+ *                             ***   Global Constant Define   ***                      *
+ *-------------------------------------------------------------------------------------*/
+#define LOG_DIR "RDM_LOG"
+#define PGM_NM "pd_frtb_dat_cre"
+#define KS2_FMR_CAL_M01 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_CAL_M01_"
+#define KS2_FMR_CAL_M02 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_CAL_M02_"
+#define KS2_FMR_CAL_M03 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_CAL_M03_"
+#define KS2_FMR_CAL_M04 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_CAL_M04_"
+#define KS2_FMR_CAL_M05 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_CAL_M05_"
+#define KS2_FMR_CAL_M06 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_CAL_M06_"
+#define KS2_FMR_CAL_M07 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_CAL_M07_"
+#define KS2_FMR_CAL_M08 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_CAL_M08_"
+#define KS2_FMR_DRC_M01 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_DRC_M01_"
+#define KS2_FMR_DRC_M02 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_DRC_M02_"
+#define KS2_FMR_DRC_M03 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_DRC_M03_"
+#define KS2_FMR_SEN_M01 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_SEN_M01_"
+#define KS2_FMR_SEN_M02 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_SEN_M02_"
+#define KS2_FMR_SEN_M03 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_SEN_M03_"
+#define KS2_FMR_SEN_M04 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_SEN_M04_"
+#define KS2_FMR_SEN_M05 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_SEN_M05_"
+#define KS2_FMR_SEN_M06 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_SEN_M06_"
+#define KS2_FMR_SEN_M07 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_SEN_M07_"
+#define KS2_FMR_CAL_M09 "/ftp/rdmdev/outdata/FRTB/KS2_FMR_CAL_M09_"
+
+/*------------------------------------------------------------------------------------*
+ *                           ***   Global Extern Variable Define ***                   *
+ *-------------------------------------------------------------------------------------*/
+extern char vs_jbccd;        /*단위업무구분코드      */
+extern char vs_jbno[5];      /*작업번호              */
+extern char vs_lgBsDt[9];    /*로그일자              */
+extern BOOL vb_fMssg;        /*화면에 display 여부   */
+extern int vi_lgSq;          /*로그 일련번호         */
+extern char vc_lggccd;       /*로그구분코드
+                                N:정상로그,
+                                R:에러로그,
+                                S:시작로그,
+                                E:종료로그          */
+extern BOOLEAN vb_fRollBack; /*오류로그 처리전 rollback 처리여부. default 값은 true*/
+/*------------------------------------------------------------------------------------*
+ *                            ***   Global variable Define   ***                       *
+ *-------------------------------------------------------------------------------------*/
+char vs_lgFlNm[255]; /*로그파일명            */
+char vs_lgDrNm[255]; /*로그디렉토리명        */
+char vs_CrrntDt[9];  /*현재일자              */
+char vs_CrrntTm[7];  /*현재시간              */
+
+/*------------------------------------------------------------------------------------*
+ *                            ***    Global Query Variable Define    ***               *
+ *-------------------------------------------------------------------------------------*/
+
+EXEC SQL BEGIN DECLARE SECTION;
+char vs_JbBsDt[9];        /*작업기준일자          */
+char vs_gz_bas_ym[6 + 1]; /*기준년월              */
+EXEC SQL END DECLARE SECTION;
+
+/*------------------------------------------------------------------------------------*
+ *                           ***  Prototype Define   ***                               *
+ *-------------------------------------------------------------------------------------*/
+int fi_Processing(void);
+int makeRWS01B(void); /* RWS01B KS2_FMR_CAL_M01 : 지주전송산출값델타커버쳐M01 IRP  */
+int makeRWS02B(void); /* RWS02B KS2_FMR_CAL_M02 : 지주전송산출값델타커버쳐M02 FXP  */
+int makeRWS03B(void); /* RWS03B KS2_FMR_CAL_M03 : 지주전송산출값델타커버쳐M03 CMP  */
+int makeRWS04B(void); /* RWS04B KS2_FMR_CAL_M04 : 지주전송산출값델타커버쳐M04 EQP  */
+int makeRWS05B(void); /* RWS05B KS2_FMR_CAL_M05 : 지주전송산출값델타커버쳐M05 OPP  */
+int makeRWS06B(void); /* RWS06B KS2_FMR_CAL_M06 : 지주전송산출값베가              */
+int makeRWS07B(void); /* RWS07B KS2_FMR_CAL_M07 : 지주전송산출값DRC               */
+int makeRWS08B(void); /* RWS08B KS2_FMR_CAL_M08 : 지주전송산출값RRAO  */
+int makeRWS09B(void); /* RWS09B KS2_FMR_DRC_M01 : 지주전송위험요소DRC비유동화  */
+int makeRWS10B(void); /* RWS10B KS2_FMR_DRC_M02 : 지주전송위험요소DRC유동화  */
+int makeRWS11B(void); /* RWS11B KS2_FMR_DRC_M03 : 지주전송위험요소DRC유동화CTP  */
+int makeRWS12B(void); /* RWS12B KS2_FMR_SEN_M01 : 지주전송위험요소GIRR  */
+int makeRWS13B(void); /* RWS13B KS2_FMR_SEN_M02 : 지주전송위험요소CSR비유동화  */
+int makeRWS14B(void); /* RWS14B KS2_FMR_SEN_M03 : 지주전송위험요소CSR유동화  */
+int makeRWS15B(void); /* RWS15B KS2_FMR_SEN_M04 : 지주전송위험요소CSR유동화CTP  */
+int makeRWS16B(void); /* RWS16B KS2_FMR_SEN_M05 : 지주전송위험요소주식  */
+int makeRWS17B(void); /* RWS17B KS2_FMR_SEN_M06 : 지주전송위험요소일반상품  */
+int makeRWS18B(void); /* RWS18B KS2_FMR_SEN_M07 : 지주전송위험요소외환  */
+int makeRWS19B(void); /* RWS19B KS2_FMR_CAL_M09 : 지주전송산출값LTA대상포지션  */
+
+/*------------------------------------------------------------------------------------*
+ *                      ***     main Function Define    ***                           *
+ *-----------------------------------------------------------------------------------*
+ *      1) Fucntion 개요
+ *         DB접속정보(DB SID,User ID, Password)를 암호화해 config 파일에 저장            *
+ *      2) Function 내 처리과정 설명
+ *         DB접속정보를 한문자식 암호화산식에 의해 암호화한 후 파일에 저장                 *
+ *      3) Program Arguments                                                          *
+ *         argv[1] : DB SID                                                           *
+ *         argv[2] : User ID                                                          *
+ *         argv[3] : PassWord                                                         *
+ *      4) Return                                                                     *
+ *         SUCCESS(1) OR FAIL(-1)                                                     *
+ *      5) Call Function List                                                         *
+ *         fi_lb_str_trim       : 문자열 TRIM                                          *
+ *         fi_lb_sys_GetCnf     : DB접속정보 받아오기                                   *
+ *         fi_lb_db_cnn         : DB에 세션 연결                                       *
+ *         fi_lb_tm_GetTm       : 시스템 현재 날짜와 시간 알아오기                       *
+ *         fi_lb_sys_FndDir     : .profile내에 정한 환경변수에 해당되는 폴더             *
+ *                                Full Path 알아내기                                   *
+ *         fi_lb_lg_FileOpn     : 단위업무별로 정해진 로그 폴더에 로그파일 생성           *
+ *         fv_lb_lg_JbState     : 프로그램 진행상태 파일과 DB에 로그 남기기               *
+ *         fv_lb_lg_JbLg        : 상세로그 파일과 DB에 생성                             *
+ *         fi_Processing        : 주 처리 루틴                                         *
+ *------------------------------------------------------------------------------------*/
+int main(int agrc, char *argv[])
+{
+    /*------------------------------------------------------------------------------------*
+     *                      ***     Local Variable Define   ***                           *
+     *------------------------------------------------------------------------------------*/
+    BOOLEAN vb_PrccngRslt; /* 프로그램 처리결과 */
+    char vs_DbSid[31];     /* DB SID           */
+    char vs_Usr_id[31];    /* User ID          */
+    char vs_pwd[31];       /* PassWord         */
+    char vs_LgPth[255];    /* 로그 Full Path   */
+    int vi_dd;             /* 펑션 실행 결과    */
+
+    /*------------------------------------------------------------------------------------*
+     *                           ***     Local SQL Variable Define   ***                   *
+     *-------------------------------------------------------------------------------------*/
+
+    /*
+        EXEC SQL BEGIN DECLARE SECTION;
+
+        EXEC SQL END DECLARE SECTION;
+
+    */
+
+    /*------------------------------------------------------------------------------------*
+     *                          ***     Local Variable Initialize   ***                   *
+     *------------------------------------------------------------------------------------/*
+
+
+
+     /*------------------------------------------------------------------------------------*
+      *                         ***     Function Input Parameter Process    ***            *
+      *------------------------------------------------------------------------------------*/
+    if (argc != 2) /* 파라미터 수 점검 */
+    {
+        printf("Error : \n");
+        printf("Usage : %s YYYYMMDD \n", argv[0]);
+        return FAIL;
+    }
+    else
+    {
+        /* Base Date Check */
+        if (fi_lb_str_trim(argv[1], 1) < 0)
+        {
+            printf("[%s]Job Base Month [%s] Error!\n", argv[0], argv[1]);
+            return FAIL;
+        }
+    }
+
+    /* Arguments를 해당변수에 복사 */
+    strcpy(vs_lgBsDt, argv[1]); /* 작업기준일자 */
+    strcpy(vs_JbBsDt, argv[1]);
+    /*------------------------------------------------------------------------------------*
+     *                      ***     DB Open & Log Start     ***                           *
+     *------------------------------------------------------------------------------------*/
+    vi_lgSq = 0;    /* 로그 순번 초기화 */
+    vs_jbccd = 'R'; /* 단위업무별 prefix DataMart : R, MRM : M, CRM : C,
+                                        CEM : E, TRM : T, RPT : P, LRM : L, ORM : O */
+
+    strcpy(vs_jbno, "RFT01B"); /* 자신의 작업번호를 셋팅한다.
+                                  작업번호 : 실행파일들을 관리하기 위해 임의로
+                                            부여한 번호로 S_JOBCODE 테이블에서 관리한다.   */
+
+    /* DB접속정보를 가지고 온다 */
+    if (fi_lb_sys_GetCnf(vs_DbSid, vs_Usr_id, vs_pwd) != SUCCESS)
+    {
+        printf("[%s]Config File Read Fail.\n", argv[0]);
+        return FAIL;
+    }
+
+    /* SID를 변수에 복사. */
+    if (fi_lb_str_trim(vs_DbSid, 2) < 0)
+    {
+        printf("[%s]Error! DB SID[%s] Error!\n", argv[0], vs_DbSid);
+        return FAIL;
+    }
+
+    /* USER ID를 변수에 복사. */
+    if (fi_lb_str_trim(vs_Usr_id, 2) < 0)
+    {
+        printf("[%s]Error! DB User ID[%s] Error!\n", argv[0], vs_Usr_id);
+        return FAIL;
+    }
+
+    /* Password를 변수에 복사 */
+    if (fi_lb_str_trim(vs_pwd, 2) < 0)
+    {
+        printf("[%s]Error! Password[%s] Error!\n", argv[0], vs_pwd);
+        return FAIL;
+    }
+    if (fi_lb_db_cnn(vs_Usr_id, vs_pwd, vs_DbSid) != SUCCESS)
+    {
+        printf("[%s]DATABASE Connection Fail.\n DB Connection Information is not valid\nSid[%s]UserID[%s]PassWd[%s]\n ", argv[0], vs_DbSid, vs_Usr_id, vs_pwd);
+        return FAIL;
+    }
+
+    /* 작업기준일자 default 값 처리 */
+    if (strcmp(vs_JbBsDt, "99991231") == 0)
+    {
+        if (fi_lb_sys_GetStdDt(vs_JbBsDt) != SUCCESS)
+        {
+            printf("Job Standard Date Error ! \n");
+            return FAIL;
+        }
+    }
+    strcpy(vs_lgBsDt, vs_JbBsDt);
+
+    /* 작업기준월 default 처리 */
+    strncpy(vs_gz_bas_ym, vs_JbBsDt, 6);
+
+    /* 현재 일자와 시간을 가지고 온다 */
+    vi_dd = fi_lb_tm_GetTm(vs_CrrntDt, vs_CrrntTm);
+
+    /* 로그 디렉토리 패스를 찾는다 */
+    if (fi_lb_sys_FndDir(LOG_DIR, vs_lgDrNm) < 0)
+    {
+        printf("[%s] 로그디렉토리 환경변수[%s] 오류!\n", argv[0], LOG_DIR);
+        return FAIL;
+    }
+
+    /* 로그파일명을 만든다 */
+    sprintf(vs_lgFlNm, "%s%s_%s_%s_%s.log", vs_lgDrNm, PGM_NM, vs_lgBsDt, (vs_CrrntDt + 2), vs_CrrntTm);
+
+    /* 로그파일을 연다 */
+    if (fi_lb_lg_FileOpn(vi_dd, vs_lgFlNm) < 0)
+    {
+        printf("[%s]Log File Create [%s] Error \n", argv[0], vs_lgFlNm);
+        return FAIL;
+    }
+    /*프로그램 시작시간을 로그에 남긴다 */
+
+    fv_lb_lg_JbState('S'); /* 작업시작 로그를 남김. 시작, 종료는 이 함수 이용하여 처리함 */
+                           /* 이때 작업요약 로그 테이블과 작업상세 로그테이블에 동시에   */
+                           /* 로그가 쌓이며 로그파일에도 로그 내역이 저장됨             */
+    vg_lgccd = 'N';        /* 상세 로그만을 남길 때                                       */
+                           /* 'N' : 정상로그 'R' : 에러로그 로 구분하여 남겨야 함          */
+                           /* 이를 위해 전역변수에 로그구분 할당                           */
+    fv_lb_lg_JbLg("작업시작 일자[%s]시간[%s]\n", vs_CrrntDt, vs_CrrntTm);
+
+    /* 프로그램 종료 */
+    if (fi_Processing() == 1)
+    {
+        fv_lb_lg_JbState('E');
+        EXEC SQL AT DB_NAME COMMIT WORK;
+        return Ok;
+    }
+    else
+    {
+        fv_lb_lg_JbState('R');
+        EXEC SQL AT DB_NAME ROLLBACK WORK;
+        return FAIL;
+    }
+}
+
+/*------------------------------------------------------------------------------------*
+ *                      ***     fi_Processing Function Define   ***                   *
+ *------------------------------------------------------------------------------------*
+ *      1) Function 개요                                                              *
+ *         주처리 루틴                                                                 *
+ *      2) Function 내 처리과정 설명                                                   *
+ *         설명                                                                       *
+ *      3) Function Parameter                                                         *
+ *         char *aaaa : 설명                                                          *
+ *      4) Return                                                                     *
+ *         SUCCESS(1) OR FAIL(-1)                                                     *
+ *      5) Call Function List                                                         *
+ *         fv_lb_lg_JbSqlLg     : 상세로그를 파일과 DB에 생성.                          *
+ *                                이때 SQL에러 내역도 동시에 남긴다.                    *
+ *------------------------------------------------------------------------------------*/
+
+int fi_Processing()
+{
+    if (makeRWS01B() == -1)
+        return FAIL; /* RWS01B KS2_FMR_CAL_M01 : 지주전송산출값델타커버쳐M01 IRP */
+    if (makeRWS02B() == -1)
+        return FAIL; /* RWS02B KS2_FMR_CAL_M02 : 지주전송산출값델타커버쳐M02 FXP */
+    if (makeRWS03B() == -1)
+        return FAIL; /* RWS03B KS2_FMR_CAL_M03 : 지주전송산출값델타커버쳐M03 CMP */
+    if (makeRWS04B() == -1)
+        return FAIL; /* RWS04B KS2_FMR_CAL_M04 : 지주전송산출값델타커버쳐M04 EQP */
+    if (makeRWS05B() == -1)
+        return FAIL; /* RWS05B KS2_FMR_CAL_M05 : 지주전송산출값델타커버쳐M05 OPP */
+    if (makeRWS06B() == -1)
+        return FAIL; /* RWS06B KS2_FMR_CAL_M06 : 지주전송산출값베가 */
+    if (makeRWS07B() == -1)
+        return FAIL; /* RWS07B KS2_FMR_CAL_M07 : 지주전송산출값DRC */
+    if (makeRWS08B() == -1)
+        return FAIL; /* RWS08B KS2_FMR_CAL_M08 : 지주전송산출값RRAO */
+    if (makeRWS09B() == -1)
+        return FAIL; /* RWS09B KS2_FMR_DRC_M01 : 지주전송위험요소DRC비유동화 */
+    if (makeRWS10B() == -1)
+        return FAIL; /* RWS10B KS2_FMR_DRC_M02 : 지주전송위험요소DRC유동화 */
+    if (makeRWS11B() == -1)
+        return FAIL; /* RWS11B KS2_FMR_DRC_M03 : 지주전송위험요소DRC유동화CTP */
+    if (makeRWS12B() == -1)
+        return FAIL; /* RWS12B KS2_FMR_SEN_M01 : 지주전송위험요소GIRR */
+    if (makeRWS13B() == -1)
+        return FAIL; /* RWS13B KS2_FMR_SEN_M02 : 지주전송위험요소CSR비유동화 */
+    if (makeRWS14B() == -1)
+        return FAIL; /* RWS14B KS2_FMR_SEN_M03 : 지주전송위험요소CSR유동화 */
+    if (makeRWS15B() == -1)
+        return FAIL; /* RWS15B KS2_FMR_SEN_M04 : 지주전송위험요소CSR유동화CTP */
+    if (makeRWS16B() == -1)
+        return FAIL; /* RWS16B KS2_FMR_SEN_M05 : 지주전송위험요소주식 */
+    if (makeRWS17B() == -1)
+        return FAIL; /* RWS17B KS2_FMR_SEN_M06 : 지주전송위험요소일반상품 */
+    if (makeRWS18B() == -1)
+        return FAIL; /* RWS18B KS2_FMR_SEN_M07 : 지주전송위험요소외환 */
+    if (makeRWS19B() == -1)
+        return FAIL; /* RWS19B KS2_FMR_CAL_M09 : 지주전송산출값LTA대상포지션 */
+
+    return SUCCESS;
+}
+
+/* RWS01B KS2_FMR_CAL_M01 : 지주전송산출값델타커버쳐M01 IRP     */
+int makeRWS01B()
+{
+    /*----------------------------------------------------------------------*
+     *              ***     Local SQL Variable Define   ***                 *
+     *----------------------------------------------------------------------*/
+    EXEC SQL BEGIN DECLARE SECTION;
+    char FILE_NAME1[100];
+
+    varchar data_cntnt1[1000];
+    varchar data_cntnt2[1000];
+    varchar data_cntnt3[1000];
+    varchar data_cntnt4[1000];
+    varchar data_cntnt5[1000];
+    varchar data_cntnt6[1000];
+    varchar data_cntnt7[1000];
+    varchar data_cntnt8[1000];
+    varchar data_cntnt9[1000];
+    varchar data_cntnt10[1000];
+
+    varchar data_cntnt11[1000];
+    varchar data_cntnt12[1000];
+    varchar data_cntnt13[1000];
+    varchar data_cntnt14[1000];
+    varchar data_cntnt15[1000];
+    varchar data_cntnt16[1000];
+    varchar data_cntnt17[1000];
+    varchar data_cntnt18[1000];
+    varchar data_cntnt19[1000];
+    varchar data_cntnt20[1000];
+
+    varchar data_cntnt21[1000];
+    varchar data_cntnt22[1000];
+    varchar data_cntnt23[1000];
+    varchar data_cntnt24[1000];
+
+    EXEC SQL END DECLARE SECTION;
+
+    FILE *f;
+    char contents[200000];
+    int cnt;
+
+    cnt = 0;
+
+    memset(FILE_NAME1, 0x00, sizeof(FILE_NAME1));
+
+    /* KS2_FMR_CAL_M01 파일을 생성한다 */
+
+    strcpy(FILE_NAME1, KS2_FMR_CAL_M01);
+
+    strcat(FILE_NAME1, vs_gz_bas_ym);
+
+    strcat(FILE_NAME1, ".dat");
+
+    /* RWS01B 파일을 생성한다 */
+    if ((f = fopen(FILE_NAME1, "w")) == 0x00)
+    {
+        fv_lb_lg_JbLg("KS2_FMR_CAL_M01 open error\n");
+        return 1;
+    }
+
+    /* 지주전송산출값델타커버쳐M01 IRP CURSOR 선언 */
+    EXEC SQL AT DB_NAME DECLARE pdRWS01B CURSOR FOR
+        SELECT
+            RPAD(NVL(STD_YR_MM, ' '), 6, ' ')-- 기준년월,
+        RPAD(NVL(DATA_CNTNT1, ' '), 3, ' ')-- 그룹회사코드,
+        RPAD(NVL(DATA_CNTNT2, ' '), 3, ' ')-- 시장리스크상품구분,
+        RPAD(NVL(DATA_CNTNT3, ' '), 4, ' ')-- 부점코드,
+        RPAD(NVL(DATA_CNTNT4, ' '), 40, ' ')-- 거래고유번호,
+        RPAD(NVL(DATA_CNTNT5, ' '), 2, ' ')-- 거래일련번호,
+        RPAD(NVL(DATA_CNTNT6, ' '), 100, ' ')-- 팩터ID,
+        RPAD(NVL(DATA_CNTNT7, ' '), 3, ' ')-- 통화코드,
+        RPAD(NVL(INPT_DATA_CNTNT1, ' '), 500, ' ')-- 만기별델타값,
+        RPAD(NVL(DATA_CNTNT8, ' '), 26, ' ')-- 커버쳐위험가중치,
+        RPAD(NVL(DATA_CNTNT9, ' '), 26, ' ')-- 커버쳐상향값,
+        RPAD(NVL(DATA_CNTNT10, ' '), 26, ' ')-- 커버쳐하향값,
+        RPAD(NVL(INPT_DATA_CNTNT2, ' '), 500, ' ')-- 만기별시나리오1델타값,
+        RPAD(NVL(DATA_CNTNT11, ' '), 26, ' ')-- 시나리오1커버쳐상향값,
+        RPAD(NVL(DATA_CNTNT12, ' '), 26, ' ')-- 시나리오1커버쳐하향값,
+        RPAD(NVL(INPT_DATA_CNTNT3, ' '), 500, ' ')-- 만기별시나리오2델타값,
+        RPAD(NVL(DATA_CNTNT13, ' '), 26, ' ')-- 시나리오2커버쳐상향값,
+        RPAD(NVL(DATA_CNTNT14, ' '), 26, ' ')-- 시나리오2커버쳐하향값,
+        RPAD(NVL(INPT_DATA_CNTNT4, ' '), 26, ' ')-- 만기별시나리오3델타값,
+        RPAD(NVL(DATA_CNTNT15, ' '), 26, ' ')-- 시나리오3커버쳐상향값,
+        RPAD(NVL(DATA_CNTNT16, ' '), 26, ' ')-- 시나리오3커버쳐하향값,
+        RPAD(NVL(INPT_DATA_CNTNT5, ' '), 500, ' ')-- 만기별시나리오4델타값
+            RPAD(NVL(DATA_CNTNT17, ' '), 26, ' ')-- 시나리오4커버쳐상향값,
+        RPAD(NVL(DATA_CNTNT18, ' '), 26, ' ')-- 시나리오4커버쳐하향값
+            FROM RWS01B
+                WHERE STD_YR_MM = : vs_gz_bas_ym;
+
+    EXEC SQL OPEN pdRWS01B;
+    if (sqlca.sqlcode != Ok)
+    {
+        vc_lggccd = 'R';
+        fv_lb_lg_JbSqlLg("*****[makeRWS01B] Cursor Open Error!!! *****\n %d, %s\n", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+        return FAIL;
+    }
+
+    for (;;)
+    {
+        memset(data_cntnt1.arr, 0x00, sizeof(data_cntnt1.arr));
+        memset(data_cntnt2.arr, 0x00, sizeof(data_cntnt2.arr));
+        memset(data_cntnt3.arr, 0x00, sizeof(data_cntnt3.arr));
+        memset(data_cntnt4.arr, 0x00, sizeof(data_cntnt4.arr));
+        memset(data_cntnt5.arr, 0x00, sizeof(data_cntnt5.arr));
+        memset(data_cntnt6.arr, 0x00, sizeof(data_cntnt6.arr));
+        memset(data_cntnt7.arr, 0x00, sizeof(data_cntnt7.arr));
+        memset(data_cntnt8.arr, 0x00, sizeof(data_cntnt8.arr));
+        memset(data_cntnt9.arr, 0x00, sizeof(data_cntnt9.arr));
+        memset(data_cntnt10.arr, 0x00, sizeof(data_cntnt10.arr));
+
+        memset(data_cntnt11.arr, 0x00, sizeof(data_cntnt11.arr));
+        memset(data_cntnt12.arr, 0x00, sizeof(data_cntnt12.arr));
+        memset(data_cntnt13.arr, 0x00, sizeof(data_cntnt13.arr));
+        memset(data_cntnt14.arr, 0x00, sizeof(data_cntnt14.arr));
+        memset(data_cntnt15.arr, 0x00, sizeof(data_cntnt15.arr));
+        memset(data_cntnt16.arr, 0x00, sizeof(data_cntnt16.arr));
+        memset(data_cntnt17.arr, 0x00, sizeof(data_cntnt17.arr));
+        memset(data_cntnt18.arr, 0x00, sizeof(data_cntnt18.arr));
+        memset(data_cntnt19.arr, 0x00, sizeof(data_cntnt19.arr));
+        memset(data_cntnt20.arr, 0x00, sizeof(data_cntnt20.arr));
+
+        memset(data_cntnt21.arr, 0x00, sizeof(data_cntnt21.arr));
+        memset(data_cntnt22.arr, 0x00, sizeof(data_cntnt22.arr));
+        memset(data_cntnt23.arr, 0x00, sizeof(data_cntnt23.arr));
+        memset(data_cntnt24.arr, 0x00, sizeof(data_cntnt24.arr));
+
+        EXEC SQL FETCH pdRWS01B INTO
+            : data_cntnt1,
+            : data_cntnt2,
+            : data_cntnt3,
+            : data_cntnt4,
+            : data_cntnt5,
+            : data_cntnt6,
+            : data_cntnt7,
+            : data_cntnt8,
+            : data_cntnt9,
+            : data_cntnt10,
+
+            : data_cntnt11,
+            : data_cntnt12,
+            : data_cntnt13,
+            : data_cntnt14,
+            : data_cntnt15,
+            : data_cntnt16,
+            : data_cntnt17,
+            : data_cntnt18,
+            : data_cntnt19,
+            : data_cntnt20,
+
+            : data_cntnt21,
+            : data_cntnt22,
+            : data_cntnt23,
+            : data_cntnt24,
+            ;
+        if (sqlca.sqlcode == DATA_NOT_FOUND)
+        {
+            if (cnt < 1)
+            {
+                vc_lggccd = 'R';
+                fv_lb_lg_JbLg("[%s][makeRWS01B] Select Error! Table RWS01B have not data \n", PGM_NM);
+                fv_lb_lg_JbLg("[%s][makeRWS01B] RWS01B \n ", PGM_NM);
+            }
+            break;
+        }
+        else if (sqlca.sqlcode != OK)
+        {
+            vc_lggccd = 'R';
+            fv_lb_lg_JbLg("[%s][makeRWS01B] Select Error! \n", PGM_NM);
+            fv_lb_lg_JbLg("[%s][makeRWS01B] RWS01B \n", PGM_NM);
+            break;
+        }
+
+        memset(contents, 0x00, sizeof(contents));
+
+        /* 버퍼에 데이터 출력 */
+        sprintf(contents, "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+                data_cntnt1.arr, data_cntnt2.arr, data_cntnt3.arr, data_cntnt4.arr, data_cntnt5.arr,
+                data_cntnt6.arr, data_cntnt7.arr, data_cntnt8.arr, data_cntnt9.arr, data_cntnt10.arr,
+                data_cntnt12.arr, data_cntnt12.arr, data_cntnt13.arr, data_cntnt14.arr, data_cntnt15.arr,
+                data_cntnt16.arr, data_cntnt17.arr, data_cntnt18.arr, data_cntnt19.arr, data_cntnt20.arr,
+                data_cntnt21.arr, data_cntnt22.arr, data_cntnt23.arr, data_cntnt24.arr);
+
+        /* 파일 출력 */
+        fwrite(contents, strlen(contents), 1, f);
+
+        cnt++;
+    }
+    EXEC SQL CLOSE pdRWS01B;
+
+    /* 5. 파일 Close */
+    fclose(f);
+
+    if (sqlca.sqlcode != OK)
+    {
+        /* 로그에 남기고자 하는 에러메시지와 DB에러 코드 및 메시지를 DB 및 파일에 남김 */
+        vc_lggccd = 'R';
+        fv_lb_lg_JbSqlLg("[makeRWS01B]KS2_FMR_CAL_M01(지주전송산출값델타커버쳐M01 IRP) FILE Error\n");
+        return FAIL;
+    }
+    printf("KS2_FMR_CAL_M01(지주전송산출값델타커버쳐M01 IRP) 생성완료 \n");
+    return SUCCESS;
+}
+
+/* RWS02B KS2_FMR_CAL_M02 : 지주전송산출값델타커버쳐M02 FXP */
+int makeRWS02B()
+{
+    /*-----------------------------------------------------------------------------------*
+     *                       ****    Local SQL Variable Define    ****                   *
+     *-----------------------------------------------------------------------------------*/
+    EXEC SQL BEGIN DECLARE SECTION;
+    char FILE_NAME1[100];
+
+    varchar data_cntnt1[1000];
+    varchar data_cntnt2[1000];
+    varchar data_cntnt3[1000];
+    varchar data_cntnt4[1000];
+    varchar data_cntnt5[1000];
+    varchar data_cntnt6[1000];
+    varchar data_cntnt7[1000];
+    varchar data_cntnt8[1000];
+    varchar data_cntnt9[1000];
+    varchar data_cntnt10[1000];
+
+    varchar data_cntnt11[1000];
+    varchar data_cntnt12[1000];
+    varchar data_cntnt13[1000];
+    varchar data_cntnt14[1000];
+    varchar data_cntnt15[1000];
+    varchar data_cntnt16[1000];
+    varchar data_cntnt17[1000];
+    varchar data_cntnt18[1000];
+    varchar data_cntnt19[1000];
+    varchar data_cntnt20[1000];
+
+    varchar data_cntnt21[1000];
+    varchar data_cntnt22[1000];
+    varchar data_cntnt23[1000];
+    varchar data_cntnt24[1000];
+
+    EXEC SQL END DECLARE SECTION;
+
+    FILE *f;
+    char contents[200000];
+    int cnt;
+
+    cnt = 0;
+
+    memset(FILE_NAME1, 0x00, sizeof(FILE_NAME1));
+
+    /* KS2_FMR_CAL_M02 파일을 생성한다 */
+
+    strcpy(FILE_NAME1, KS2_FMR_CAL_M02);
+
+    strcat(FILE_NAME1, vs_gz_bas_ym);
+
+    strcat(FILE_NAME1, ".dat");
+
+    /* RWS02B 파일을 생성한다 */
+    if ((f = fopen(FILE_NAME1, "w")) == 0x00)
+    {
+        fv_lb_lg_JbLg("KS2_FMR_CAL_M02 open error\n");
+        return 1;
+    }
+
+    /* 지주전송산출값델타커버쳐M02 FXP CURSOR 선언 */
+    EXEC SQL AT DB_NAME DECLARE pdRWS02B CURSOR FOR
+        SELECT RPAD(NVL(STD_YR_MM, ' '), 6, ' ')-- 기준년월,
+        RPAD(NVL(DATA_CNTNT1, ' '), 3, ' ')-- 그룹회사코드, RPAD(NVL(DATA_CNTNT2, ' '), 3, ' ')-- 시장리스크상품구분, RPAD(NVL(DATA_CNTNT3, ' '), 4, ' ')-- 부점코드, RPAD(NVL(DATA_CNTNT4, ' '), 40, ' ')-- 거래고유번호, RPAD(NVL(DATA_CNTNT5, ' '), 3, ' ')-- 거래일련번호, RPAD(NVL(DATA_CNTNT6, ' '), 100, ' ')-- 팩터ID, RPAD(NVL(DATA_CNTNT7, ' '), 3, ' ')-- 통화코드, RPAD(NVL(INPT_DATA_CNTNT1, ' '), 500, ' ')-- 만기별델타값, RPAD(NVL(DATA_CNTNT8, ' '), 26, ' ')-- 커버쳐위험가중치, RPAD(NVL(DATA_CNTNT9, ' '), 26, ' ')-- 커버쳐상향값, RPAD(NVL(DATA_CNTNT10, ' '), 26, ' ')-- 커버쳐하향값, RPAD(NVL(INPT_DATA_CNTNT2, ' '), 500, ' ')-- 만기별시나리오1델타값, RPAD(NVL(DATA_CNTNT11, ' '), 26, ' ')-- 시나리오1커버쳐상향값, RPAD(NVL(DATA_CNTNT12, ' '), 26, ' ')-- 시나리오1커버쳐하향값, RPAD(NVL(INPT_DATA_CNTNT3, ' '), 500, ' ')-- 만기별시나리오2델타값, RPAD(NVL(DATA_CNTNT13, ' '), 26, ' ')-- 시나리오2커버쳐상향값, RPAD(NVL(DATA_CNTNT14, ' '), 26, ' ')-- 시나리오2커버쳐하향값, RPAD(NVL(INPT_DATA_CNTNT4, ' '), 500, ' ')-- 만기별시나리오3델타값, RPAD(NVL(DATA_CNTNT15, ' '), 26, ' ')-- 시나리오3커버쳐상향값, RPAD(NVL(DATA_CNTNT16, ' '), 26, ' ')-- 시나리오3커버쳐하향값, RPAD(NVL(INPT_DATA_CNTNT5, ' '), 500, ' ')-- 만기별시나리오4델타값, RPAD(NVL(DATA_CNTNT17, ' '), 26, ' ')-- 시나리오4커버쳐상향값, RPAD(NVL(DATA_CNTNT18, ' '), 26, ' ')-- 시나리오4커버쳐하향값 FROM RWS02B WHERE STD_YR_MM = : vs_gz_bas_ym;
+
+    EXEC SQL OPEN pdRWS02B;
+    if (sqlca.sqlcode != Ok)
+    {
+        vc_lggccd = 'R';
+        fv_lb_lg_JbSqlLg("*****[makeRWS02B] Cursor Open Error!!! *****\n %d, %s\n", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+        return FAIL;
+    }
+
+    for (;;)
+    {
+        memset(data_cntnt1.arr, 0x00, sizeof(data_cntnt1.arr));
+        memset(data_cntnt2.arr, 0x00, sizeof(data_cntnt2.arr));
+        memset(data_cntnt3.arr, 0x00, sizeof(data_cntnt3.arr));
+        memset(data_cntnt4.arr, 0x00, sizeof(data_cntnt4.arr));
+        memset(data_cntnt5.arr, 0x00, sizeof(data_cntnt5.arr));
+        memset(data_cntnt6.arr, 0x00, sizeof(data_cntnt6.arr));
+        memset(data_cntnt7.arr, 0x00, sizeof(data_cntnt7.arr));
+        memset(data_cntnt8.arr, 0x00, sizeof(data_cntnt8.arr));
+        memset(data_cntnt9.arr, 0x00, sizeof(data_cntnt9.arr));
+        memset(data_cntnt10.arr, 0x00, sizeof(data_cntnt10.arr));
+
+        memset(data_cntnt11.arr, 0x00, sizeof(data_cntnt11.arr));
+        memset(data_cntnt12.arr, 0x00, sizeof(data_cntnt12.arr));
+        memset(data_cntnt13.arr, 0x00, sizeof(data_cntnt13.arr));
+        memset(data_cntnt14.arr, 0x00, sizeof(data_cntnt14.arr));
+        memset(data_cntnt15.arr, 0x00, sizeof(data_cntnt15.arr));
+        memset(data_cntnt16.arr, 0x00, sizeof(data_cntnt16.arr));
+        memset(data_cntnt17.arr, 0x00, sizeof(data_cntnt17.arr));
+        memset(data_cntnt18.arr, 0x00, sizeof(data_cntnt18.arr));
+        memset(data_cntnt19.arr, 0x00, sizeof(data_cntnt19.arr));
+        memset(data_cntnt20.arr, 0x00, sizeof(data_cntnt20.arr));
+
+        memset(data_cntnt21.arr, 0x00, sizeof(data_cntnt21.arr));
+        memset(data_cntnt22.arr, 0x00, sizeof(data_cntnt22.arr));
+        memset(data_cntnt23.arr, 0x00, sizeof(data_cntnt23.arr));
+        memset(data_cntnt24.arr, 0x00, sizeof(data_cntnt24.arr));
+
+        EXEC SQL FETCH pdRWS02B INTO
+            : data_cntnt1,
+            : data_cntnt2,
+            : data_cntnt3,
+            : data_cntnt4,
+            : data_cntnt5,
+            : data_cntnt6,
+            : data_cntnt7,
+            : data_cntnt8,
+            : data_cntnt9,
+            : data_cntnt10,
+
+            : data_cntnt11,
+            : data_cntnt12,
+            : data_cntnt13,
+            : data_cntnt14,
+            : data_cntnt15,
+            : data_cntnt16,
+            : data_cntnt17,
+            : data_cntnt18,
+            : data_cntnt19,
+            : data_cntnt20,
+
+            : data_cntnt21,
+            : data_cntnt22,
+            : data_cntnt23,
+            : data_cntnt24;
+
+        if (sqlca.sqlcode == DATA_NOT_FOUND)
+        {
+            if (cnt < 1)
+            {
+                vc_lggccd = 'R';
+                fv_lb_lg_JbLg("[%s][makeRWS02B] Select Error! Table RWS02B have not data \n", PGM_NM);
+                fv_lb_lg_JbLg("[%s][makeRWS02B] RWS02B \n ", PGM_NM);
+            }
+            break;
+        }
+        else if (sqlca.sqlcode != Ok)
+        {
+            vc_lggccd = 'R';
+            fv_lb_lg_JbLg("[%s][makeRWS02B] Select Error! \n", PGM_NM);
+            fv_lb_lg_JbLg("[%s][makeRWS02B] RWS02B \n ", PGM_NM);
+            break;
+        }
+
+        memset(contents, 0x00, sizeof(contents));
+
+        /* 버퍼에 데이터 출력 */
+        /****************** 1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24****/
+        sprintf(contents, "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s\n",
+                data_cntnt1.arr, data_cntnt2.arr, data_cntnt3.arr, data_cntnt4.arr, data_cntnt5.arr, data_cntnt6.arr, data_cntnt7.arr, data_cntnt8.arr, data_cntnt9.arr, data_cntnt10.arr, data_cntnt11.arr, data_cntnt12.arr, data_cntnt13.arr, data_cntnt14.arr, data_cntnt15.arr, data_cntnt16.arr, data_cntnt17.arr, data_cntnt18.arr, data_cntnt19.arr, data_cntnt20.arr, data_cntnt21.arr, data_cntnt22.arr, data_cntnt23.arr, data_cntnt24.arr);
+
+        /* 파일 출력 */
+        fwrite(contents, strlen(contents), 1, f);
+
+        cnt++;
+    }
+
+    EXEC SQL CLOSE pdRWS02B;
+
+    /* 5. 파일 Close */
+    fclose(f);
+
+    if (sqlca.sqlcode != Ok)
+    {
+        /* 로그에 남기고자 하는 에러메시지와 DB 에러 코드 및 메시지를 DB 및 파일에 남김 */
+        vc_lggccd = 'R';
+        fv_lb_lg_JbSqlLg("[makeRWS02B]KS2_FMR_CAL_M02(지주전송산출값델타커버쳐M02 FXP) FILE Error\n");
+        return FAIL;
+    }
+    printf("KS2_FMR_CAL_M02(지주전송산출값델타커버쳐M02 FXP) 생성완료 \n");
+    return SUCCESS;
+}
